@@ -14,7 +14,7 @@
             <img src="assets/logo.png" alt="Logo Viens Courir">
         </div>
         <div class="header-actions">
-            <a href="upload.php" class="btn-link btn-primary">Espace Admin</a>
+            <a href="upload.php?<?= h($currentQuery) ?>" class="btn-link btn-primary">Espace Admin</a>
             <a href="<?= $resetQuery !== '' ? '?' . h($resetQuery) : 'testdb.php' ?>" class="btn-link btn-secondary">Réinitialiser les filtres</a>
         </div>
     </div>
@@ -45,8 +45,8 @@
                 <label for="sexe">Genre</label>
                 <select name="sexe" id="sexe">
                     <option value="all" <?= $sexe === 'all' ? 'selected' : '' ?>>Tous</option>
-                    <option value="m" <?= $sexe === 'm' ? 'selected' : '' ?>>Masculin</option>
-                    <option value="f" <?= $sexe === 'f' ? 'selected' : '' ?>>Féminin</option>
+                    <option value="m" <?= $sexe === 'm' ? 'selected' : '' ?>>Hommes</option>
+                    <option value="f" <?= $sexe === 'f' ? 'selected' : '' ?>>Femmes</option>
                 </select>
             </div>
 

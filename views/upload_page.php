@@ -157,7 +157,7 @@
 <body>
 <div class="container">
     <div class="topbar">
-        <a href="admin.php" class="btn-back">Retour admin</a>
+        <a href="testdb.php?<?= htmlspecialchars($returnQuery, ENT_QUOTES, 'UTF-8') ?>" class="btn-back">Retour classement</a>
         <a href="logout.php" class="btn-logout">Déconnexion</a>
     </div>
 
@@ -178,7 +178,7 @@
                 type="text"
                 id="display_name"
                 name="display_name"
-                placeholder="Ex. Course A"
+                placeholder="Ex. Pompier Laval"
                 required
             >
 
@@ -200,9 +200,9 @@
         <div class="help">
             <p>Le fichier doit utiliser ce format :</p>
             <pre>First_Name,Last_Name,Distance,Chip_Time,Sex,Age</pre>
-            <p>Les colonnes obligatoires sont <strong>First_Name</strong>, <strong>Last_Name</strong>, <strong>Distance</strong> et <strong>Chip_Time</strong>.</p>
-            <p>Les colonnes <strong>Sex</strong> et <strong>Age</strong> sont optionnelles.</p>
+            <p>Toutes les colonnes ci-dessus sont obligatoires.</p>
             <p>Le champ <strong>Nom à afficher</strong> est saisi dans le formulaire et sera utilisé comme nom de course dans les résultats.</p>
+            <p>Le séparateur peut être une virgule ou un point-virgule.</p>
             <pre>First_Name,Last_Name,Distance,Chip_Time,Sex,Age
 Jean,Dupont,Marathon,03:08:10,M,42
 Marie,Tremblay,10 km,00:45:22,F,31</pre>

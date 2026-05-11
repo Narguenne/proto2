@@ -87,21 +87,15 @@ function handleCsvUpload(PDO $pdo): void
 
     $uploaded = $_FILES['csv'];
     $filename = pathinfo($uploaded['name'], PATHINFO_FILENAME);
-    $targetDir = __DIR__ . '/../csv/uploads/';
 
-    if (!is_dir($targetDir)) {
-        @mkdir($targetDir, 0775, true);
-    }
-
-    $targetPath = $targetDir . basename($uploaded['name']);
-
-    if (!is_uploaded_file($uploaded['tmp_name']) || !move_uploaded_file($uploaded['tmp_name'], $targetPath)) {
-        $_SESSION['upload_error'] = 'Impossible de déplacer le fichier CSV.';
+    if (!is_uploaded_file($uploaded['tmp_name'])) {
+        $_SESSION['upload_error'] = 'Le fichier uploadé est invalide.';
         header('Location: upload.php');
         exit;
     }
 
-    $handle = fopen($targetPath, 'r');
+    $handle = fopen($uploaded['tmp_name'], 'r');
+
     if (!$handle) {
         $_SESSION['upload_error'] = 'Impossible d’ouvrir le fichier CSV.';
         header('Location: upload.php');
@@ -109,6 +103,7 @@ function handleCsvUpload(PDO $pdo): void
     }
 
     $firstLine = fgets($handle);
+
     if ($firstLine === false) {
         fclose($handle);
         $_SESSION['upload_error'] = 'Le fichier CSV est vide.';
@@ -131,6 +126,7 @@ function handleCsvUpload(PDO $pdo): void
     $mapping = [];
 
     foreach ($columns as $i => $column) {
+        $column = preg_replace('/^\xEF\xBB\xBF/', '', (string) $column);
         $key = strtolower(trim($column));
 
         if ($key === 'first_name') {
@@ -148,12 +144,12 @@ function handleCsvUpload(PDO $pdo): void
         }
     }
 
-    $required = ['First_Name', 'Last_Name', 'Distance', 'Chip_Time'];
+    $required = ['First_Name', 'Last_Name', 'Distance', 'Chip_Time', 'Sex', 'Age'];
     $missing = array_diff($required, array_values($mapping));
 
     if (!empty($missing)) {
         fclose($handle);
-        $_SESSION['upload_error'] = 'Colonnes obligatoires manquantes : First_Name, Last_Name, Distance, Chip_Time.';
+        $_SESSION['upload_error'] = 'Le fichier CSV doit contenir les colonnes : First_Name, Last_Name, Distance, Chip_Time, Sex, Age.';
         header('Location: upload.php');
         exit;
     }
@@ -202,23 +198,22 @@ function handleCsvUpload(PDO $pdo): void
                 trim((string) $row['First_Name']) === '' ||
                 trim((string) $row['Last_Name']) === '' ||
                 trim((string) $row['Distance']) === '' ||
-                trim((string) $row['Chip_Time']) === ''
+                trim((string) $row['Chip_Time']) === '' ||
+                trim((string) $row['Sex']) === '' ||
+                trim((string) $row['Age']) === ''
             ) {
                 $skipped++;
                 continue;
             }
 
-            $age = null;
-            if ($row['Age'] !== null && trim((string) $row['Age']) !== '') {
-                $age = (int) filter_var($row['Age'], FILTER_SANITIZE_NUMBER_INT);
-            }
+            $age = (int) filter_var($row['Age'], FILTER_SANITIZE_NUMBER_INT);
 
             $stmt->execute([
                 ':import_id' => $importId,
                 ':Distance' => trim((string) $row['Distance']),
                 ':First_Name' => trim((string) $row['First_Name']),
                 ':Last_Name' => trim((string) $row['Last_Name']),
-                ':Sex' => trim((string) ($row['Sex'] ?? '')),
+                ':Sex' => trim((string) $row['Sex']),
                 ':Age' => $age,
                 ':Chip_Time' => trim((string) $row['Chip_Time']),
                 ':Race' => $displayName,

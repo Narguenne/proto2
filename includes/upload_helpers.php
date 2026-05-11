@@ -30,22 +30,14 @@ function ensureImportsSchema(PDO $pdo): void
 
 function ensureRaceResultsSchema(PDO $pdo): void
 {
-    $pdo->exec("
-        CREATE TABLE IF NOT EXISTS race_results (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            import_id INT NOT NULL,
-            Distance VARCHAR(255) NULL,
-            First_Name VARCHAR(255) NULL,
-            Last_Name VARCHAR(255) NULL,
-            Sex VARCHAR(20) NULL,
-            Age INT NULL,
-            Chip_Time VARCHAR(50) NULL,
-            Race VARCHAR(255) NULL,
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    ");
-
     $columns = $pdo->query("SHOW COLUMNS FROM race_results")->fetchAll(PDO::FETCH_COLUMN);
+
+    if (!in_array('id', $columns, true)) {
+        $pdo->exec("ALTER TABLE race_results ADD COLUMN id INT NOT NULL FIRST");
+        $pdo->exec("SET @i = 0");
+        $pdo->exec("UPDATE race_results SET id = (@i := @i + 1)");
+        $pdo->exec("ALTER TABLE race_results MODIFY COLUMN id INT NOT NULL AUTO_INCREMENT PRIMARY KEY");
+    }
 
     if (!in_array('import_id', $columns, true)) {
         $pdo->exec("ALTER TABLE race_results ADD COLUMN import_id INT NULL AFTER id");
