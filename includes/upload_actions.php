@@ -13,6 +13,11 @@ function handleUploadActions(PDO $pdo): void
         return;
     }
 
+    if ($action === 'delete_import') {
+        handleImportDelete($pdo);
+        return;
+    }
+
     handleCsvUpload($pdo);
 }
 
@@ -57,6 +62,42 @@ function handleHistoryUpdate(PDO $pdo): void
             $pdo->rollBack();
         }
         $_SESSION['upload_error'] = 'Impossible de mettre à jour l’historique.';
+    }
+
+    header('Location: upload.php');
+    exit;
+}
+
+function handleImportDelete(PDO $pdo): void
+{
+    $importId = isset($_POST['import_id']) ? (int) $_POST['import_id'] : 0;
+
+    if ($importId <= 0) {
+        $_SESSION['upload_error'] = 'Import invalide.';
+        header('Location: upload.php');
+        exit;
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("DELETE FROM race_results WHERE import_id = :import_id");
+        $stmt->execute([
+            ':import_id' => $importId,
+        ]);
+
+        $stmt = $pdo->prepare("DELETE FROM imports WHERE id = :id");
+        $stmt->execute([
+            ':id' => $importId,
+        ]);
+
+        $pdo->commit();
+        $_SESSION['upload_message'] = 'Import supprimé avec succès.';
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        $_SESSION['upload_error'] = 'Impossible de supprimer cet import.';
     }
 
     header('Location: upload.php');
@@ -238,10 +279,10 @@ function handleCsvUpload(PDO $pdo): void
         $pdo->commit();
         $_SESSION['upload_message'] = "Import terminé : $rows lignes ajoutées, $skipped lignes ignorées.";
     } catch (Throwable $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-        $_SESSION['upload_error'] = 'Une erreur est survenue pendant l’import.';
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    $_SESSION['upload_error'] = 'Erreur import : ' . $e->getMessage();
     }
 
     header('Location: upload.php');

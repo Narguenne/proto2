@@ -103,6 +103,14 @@
             background: #1d4ed8;
         }
 
+        .btn-delete {
+            background: #dc2626;
+        }
+
+        .btn-delete:hover {
+            background: #b91c1c;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -113,11 +121,17 @@
             text-align: left;
             padding: 12px 10px;
             border-bottom: 1px solid #e5e7eb;
-            vertical-align: middle;
+            vertical-align: top;
         }
 
         th {
             background: #f9fafb;
+        }
+
+        .history-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .history-form {
@@ -129,6 +143,10 @@
         .history-form input[type="text"] {
             margin-bottom: 0;
             min-width: 220px;
+        }
+
+        .delete-form {
+            margin: 0;
         }
 
         .help {
@@ -239,18 +257,26 @@ Marie,Tremblay,10 km,00:45:22,F,31</pre>
                         <td><?= htmlspecialchars((string) $import['row_count'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= htmlspecialchars((string) $import['skipped_count'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td>
-                            <form method="post" class="history-form">
-                                <input type="hidden" name="action" value="update_history">
-                                <input type="hidden" name="import_id" value="<?= htmlspecialchars((string) $import['id'], ENT_QUOTES, 'UTF-8') ?>">
-                                <input
-                                    type="text"
-                                    name="display_name"
-                                    value="<?= htmlspecialchars((string) ($import['display_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
-                                    placeholder="Nom à afficher"
-                                    required
-                                >
-                                <button type="submit">Enregistrer</button>
-                            </form>
+                            <div class="history-actions">
+                                <form method="post" class="history-form">
+                                    <input type="hidden" name="action" value="update_history">
+                                    <input type="hidden" name="import_id" value="<?= htmlspecialchars((string) $import['id'], ENT_QUOTES, 'UTF-8') ?>">
+                                    <input
+                                        type="text"
+                                        name="display_name"
+                                        value="<?= htmlspecialchars((string) ($import['display_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                        placeholder="Nom à afficher"
+                                        required
+                                    >
+                                    <button type="submit">Enregistrer</button>
+                                </form>
+
+                                <form method="post" class="delete-form" onsubmit="return confirm('Supprimer cet import et tous ses résultats ?');">
+                                    <input type="hidden" name="action" value="delete_import">
+                                    <input type="hidden" name="import_id" value="<?= htmlspecialchars((string) $import['id'], ENT_QUOTES, 'UTF-8') ?>">
+                                    <button type="submit" class="btn-delete">Supprimer</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
